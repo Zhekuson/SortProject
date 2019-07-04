@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <ctime>
+#include <string>
 using namespace std;
 
 
@@ -11,23 +13,92 @@ void simpleInsertionsSort(unsigned int*, unsigned int, unsigned int*, unsigned i
 void binaryInsertionsSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
 void countStableSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
 void radixSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
-int main(){
-	unsigned int arr[10]{ 3000,4000,5000,6000,1000,8000,7000,9000,10000, 2000 }; // 1 2 2 3 4 4 5 6 7 9
-	unsigned int arr1[10];
-	unsigned int count = 0;
-	bubbleSortIverson1(arr, 10, arr1, count);
-	cout << count << "\n";
-	cout << arr1[0] << arr1[1] << arr1[2] << arr1[3] << arr1[4] << arr1[5] << arr1[6] << arr1[7] << arr1[8] << arr1[9] << "\n";
-	count = 0;
-	countStableSort(arr, 10, arr1, count);
-	cout << count << "\n";
-	cout << arr1[0] << arr1[1] << arr1[2] << arr1[3] << arr1[4] << arr1[5] << arr1[6] << arr1[7] << arr1[8] << arr1[9] << "\n";
-	count = 0;
-	radixSort(arr, 10, arr1, count);
-	cout << count << "\n";
-	cout << arr1[0] << arr1[1] << arr1[2] << arr1[3] << arr1[4] << arr1[5] << arr1[6] << arr1[7] << arr1[8] << arr1[9] << "\n";
+void copy_array(unsigned int*, unsigned int, unsigned int*);
+unsigned int* generator_module(unsigned int, unsigned int);
+void swap(unsigned int&, unsigned int&);
+void destroy_array(unsigned int*, unsigned int );
 
-	cin >> count;
+typedef void(*sortFunction)(unsigned int*, unsigned int,
+	unsigned int*, unsigned int& );
+
+int main(){
+	setlocale(LC_ALL, "Russian");
+	srand(time(0));
+	const unsigned int sort_size = 6;
+	sortFunction sortArray[sort_size]{ bubbleSortSimple, bubbleSortIverson1, bubbleSortIverson12, 
+		simpleInsertionsSort, binaryInsertionsSort, countStableSort };
+	const string names[7]{"Простой пузырек", "Пузырек с условием Айверсона-1","Пузырек с условием Айверсона-1-2",
+		"Простые вставки","Бинарные вставки", "Подсчетом", "Цифровая"};
+	
+	unsigned int* elite_array1 = generator_module(8000, 10);
+	unsigned int* elite_array2 = generator_module(8000, 10000);
+	for (size_t arrays = 0; arrays < 4; arrays++)
+	{
+
+		cout << "Experiment " <<arrays << "\n";
+		unsigned int* elite_array_exp;
+		for (size_t len_array = 1000; len_array <= 8000; len_array += 1000)
+		{
+			cout << "Len = " << len_array<<"\n";
+			elite_array_exp = new unsigned int[len_array];
+			if (arrays == 0){
+				copy_array(elite_array1, len_array, elite_array_exp);
+			}
+			else if (arrays == 1){
+				copy_array(elite_array2, len_array, elite_array_exp);
+			}
+			else if (arrays == 2){
+				copy_array(elite_array2, len_array, elite_array_exp);
+				destroy_array(elite_array_exp, len_array);
+			}
+			else
+			{
+				for (size_t i = 0; i < len_array; i++)
+				{
+					elite_array_exp[i] = len_array - i;
+				}
+			}
+			unsigned int* curr_array = new unsigned int[len_array];
+			unsigned int* result_array = new unsigned int[len_array];
+			copy_array(elite_array_exp, len_array, curr_array);
+			
+
+
+			unsigned int count_operations;
+			for (size_t sort = 0; sort < sort_size; sort++)
+			{
+				count_operations = 0;
+				sortArray[sort](curr_array, len_array, result_array, count_operations);
+				cout << names[sort];
+				cout << count_operations << "\n";
+			}
+
+			delete[] curr_array;
+			delete[] result_array;
+		}
+		delete[] elite_array_exp;
+	}
+		int nl;
+		cin >> nl;
+		delete[] elite_array1;
+		delete[] elite_array2;
+}
+//count элементов, по модулю module
+unsigned int* generator_module(unsigned int count, unsigned int module) {
+	unsigned int* arr = new unsigned int[count];
+	for (size_t i = 0; i < count; i++)
+	{
+		arr[i] = rand() % module;
+	}
+	return arr;
+}
+
+void destroy_array(unsigned int* arr, unsigned int array_size) {
+	for (size_t i = 0; i < 10; i++)
+	{
+		unsigned int index = rand() % array_size;
+		swap(arr[i], arr[index]);
+	}
 }
 
 //Меняет местами. swap весит 3 операции
@@ -36,7 +107,7 @@ void swap(unsigned int& t1, unsigned int& t2) {
 	t1 = t2;
 	t2 = temp;
 }
-//Копирует массив. Не должен учитываться, потому что не входит в сортировку
+//Копирует массив.
 void copy_array(unsigned int* arr, unsigned int array_size, unsigned int* result) {
 	for (size_t i = 0; i < array_size; i++)
 	{
