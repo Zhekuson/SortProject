@@ -9,11 +9,10 @@ void bubbleSortIverson1(unsigned int*, unsigned int, unsigned int*, unsigned int
 void bubbleSortIverson12(unsigned int*, unsigned int, unsigned int*, unsigned int&);
 void simpleInsertionsSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
 void binaryInsertionsSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
-void numericSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
 void countStableSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
-
+void radixSort(unsigned int*, unsigned int, unsigned int*, unsigned int&);
 int main(){
-	unsigned int arr[10]{ 9,2,4,7,4,2,1,3,5, 6 }; // 1 2 2 3 4 4 5 6 7 9
+	unsigned int arr[10]{ 3000,4000,5000,6000,1000,8000,7000,9000,10000, 2000 }; // 1 2 2 3 4 4 5 6 7 9
 	unsigned int arr1[10];
 	unsigned int count = 0;
 	bubbleSortIverson1(arr, 10, arr1, count);
@@ -21,6 +20,10 @@ int main(){
 	cout << arr1[0] << arr1[1] << arr1[2] << arr1[3] << arr1[4] << arr1[5] << arr1[6] << arr1[7] << arr1[8] << arr1[9] << "\n";
 	count = 0;
 	countStableSort(arr, 10, arr1, count);
+	cout << count << "\n";
+	cout << arr1[0] << arr1[1] << arr1[2] << arr1[3] << arr1[4] << arr1[5] << arr1[6] << arr1[7] << arr1[8] << arr1[9] << "\n";
+	count = 0;
+	radixSort(arr, 10, arr1, count);
 	cout << count << "\n";
 	cout << arr1[0] << arr1[1] << arr1[2] << arr1[3] << arr1[4] << arr1[5] << arr1[6] << arr1[7] << arr1[8] << arr1[9] << "\n";
 
@@ -65,7 +68,7 @@ void bubbleSortSimple(unsigned int* arr, unsigned int array_size,
 	copy_array(arr, array_size, result);
 }
 
-//сортировка
+//сортировка пузырьком с первым условием јйверсона
 void bubbleSortIverson1(unsigned int* arr, unsigned int array_size,
 	unsigned int* result, unsigned int&  operations) {
 	operations = 0;
@@ -96,6 +99,8 @@ void bubbleSortIverson1(unsigned int* arr, unsigned int array_size,
 
 	copy_array(arr, array_size, result);
 }
+
+//сортировка пузырьком с первым и вторым условием јйверсона
 void bubbleSortIverson12(unsigned int* arr, unsigned int array_size,
 	unsigned int* result, unsigned int&  operations) {
 	operations = 0;
@@ -138,6 +143,8 @@ void bubbleSortIverson12(unsigned int* arr, unsigned int array_size,
 	}
 	copy_array(arr, array_size, result);
 }
+
+//сортировка простыми вставками
 void simpleInsertionsSort(unsigned int* arr, unsigned int array_size,
 	unsigned int* result, unsigned int&  operations) {
 	operations = 0;
@@ -171,6 +178,8 @@ void simpleInsertionsSort(unsigned int* arr, unsigned int array_size,
 
 	copy_array(arr, array_size, result);
 }
+
+//сортировка бинарными вставками
 void binaryInsertionsSort(unsigned int* arr, unsigned int array_size,
 	unsigned int* result, unsigned int&  operations) {
 	operations = 0;
@@ -201,7 +210,6 @@ void binaryInsertionsSort(unsigned int* arr, unsigned int array_size,
 			}
 
 		}
-		unsigned int position;
 
 		operations += 3;
 		if (arr[i] > arr[left]) {
@@ -233,7 +241,7 @@ void binaryInsertionsSort(unsigned int* arr, unsigned int array_size,
 
 	copy_array(arr, array_size, result);
 }
-//поиск максимума. 
+//поиск максимума
 unsigned int find_Max(unsigned int* arr, unsigned int& array_size,
 	unsigned int& operations) {
 	operations += 1;
@@ -252,6 +260,7 @@ unsigned int find_Max(unsigned int* arr, unsigned int& array_size,
 	return maximum;
 }
 
+//устойчива€ сортировка подсчетом
 void countStableSort(unsigned int* arr, unsigned int array_size, 
 	unsigned int* result, unsigned int& operations) {
 	operations = 0;
@@ -268,24 +277,143 @@ void countStableSort(unsigned int* arr, unsigned int array_size,
 
 
 	//количество
-	operations +=
+	operations += 3;
 	for (size_t i = 0; i < array_size - 1; i++)
 	{
+		operations += 4;
+
+		operations += 6;
 		C[arr[i]] = C[arr[i]] + 1;
 	}
+
+	operations += 3;
 	for (size_t i = 1; i < K + 1; i++)
 	{
+		operations += 4;
+
+		operations += 5;
 		C[i] = C[i - 1] + C[i]; // частичные суммы
 	}
+
 	//главный цикл
+	operations += 3;
 	for (size_t i = array_size - 1; i > 0; i--)
 	{
+		operations += 3;
+
+		operations += 6;
 		result[C[arr[i]]-1] = arr[i];
+		operations += 6;
 		C[arr[i]] = C[arr[i]] - 1;
 	}
 
 }
-void numericSort(unsigned int* arr, unsigned int array_size, unsigned int* result, int& operations) {
 
+
+
+//юнион дл€ цифровой сортировки
+union number
+{
+	unsigned int num;
+	unsigned char signs[4];
+};
+//копирует массив из юнионов
+void copy_array(number* arr, unsigned int array_size, number* result, unsigned int& operations) {
+	operations += 2;
+	for (size_t i = 0; i < array_size; i++)
+	{
+		operations += 3;
+
+		operations += 3;
+		result[i] = arr[i];
+	}
+}
+
+//цифрова€ сортировка с юнионом
+void countStableSortNumeric(number* arr, unsigned int array_size,
+	number* result, unsigned int& operations) {
+	
+	unsigned int K = 255;// max в массиве
+	unsigned int* C = new unsigned int[K + 1];
+	//number* C = new number[K + 1];
+	//цикл по разр€дам
+	for (size_t glob = 0; glob < 4 ; glob++)
+	{
+
+
+		//обнуление
+		operations += 3;
+		for (size_t i = 0; i < K + 1; i++)
+		{
+			operations += 4;
+			operations += 2;
+			C[i]= 0;
+		}
+
+
+		//количество
+		operations += 3;
+		for (size_t i = 0; i < array_size ; i++)
+		{
+			operations += 4;
+
+			operations += 6;
+			C[arr[i].signs[glob]] = C[arr[i].signs[glob]] + 1;
+		}
+
+		operations += 3;
+		for (size_t i = 1; i < K + 1; i++)
+		{
+			operations += 4;
+
+			operations += 5;
+			C[i] = C[i - 1] + C[i]; // частичные суммы
+		}
+
+		//главный цикл
+		operations += 3;
+		for (size_t i = array_size - 1; i > 0 ; i--)
+		{
+			operations += 3;
+
+			operations += 6;
+			result[C[arr[i].signs[glob]] - 1] = arr[i];
+			operations += 6;
+			C[arr[i].signs[glob]] = C[arr[i].signs[glob]] - 1;
+		}
+		if (glob < 4) {
+			copy_array(result, array_size, arr, operations);
+		}
+	}
+}
+
+
+
+//цифрова€ сортировка 
+void radixSort(unsigned int* arr, unsigned int array_size, unsigned int* result, unsigned int& operations) {
+	operations = 0;
+	
+	number* numbers = new number[array_size];
+	number* sortedNumbers = new number[array_size];
+
+	operations += 2;
+	for (size_t i = 0; i < array_size; i++)
+	{
+		operations += 3;
+		operations += 3;
+		numbers[i].num = arr[i];
+	}
+	//по основанию 256
+	//unsigned int* count_arr = new unsigned int[256];
+
+	
+	countStableSortNumeric(numbers, array_size, sortedNumbers, operations);
+
+	for (size_t i = 0; i < array_size; i++)
+	{
+		result[i] = sortedNumbers[i].num;
+	}
+	delete[] numbers;
+	delete[] sortedNumbers;
 }
 
