@@ -29,7 +29,7 @@ int main(){
 		simpleInsertionsSort, binaryInsertionsSort, countStableSort };
 	const string names[7]{"Простой пузырек", "Пузырек с условием Айверсона-1","Пузырек с условием Айверсона-1-2",
 		"Простые вставки","Бинарные вставки", "Подсчетом", "Цифровая"};
-	const string experiments[4]{ "0-9 random", "0-10000 random", "spoiled"," 10000->1" };
+	const string experiments[4]{ "0-9 random", "0-10000 random", "swapped"," 10000->1" };
 	ofstream fout("Results.csv");
 	
 	unsigned int* elite_array1 = generator_module(8000, 10);
@@ -39,11 +39,11 @@ int main(){
 	{
 		cout << elite_array1[i] << " ";
 	}
-	simpleInsertionsSort(elite_array1, 8000, elite_array2, s);
+	radixSort(elite_array1, 8000, elite_array1, s);
 	cout << s;
 	for (size_t i = 0; i < 8000; i++)
 	{
-		cout << elite_array2[i] << " ";
+		cout << elite_array1[i] << " ";
 	}
 
 	fout << "Длины:Сортировки;";
@@ -256,24 +256,21 @@ void simpleInsertionsSort(unsigned int* arr, unsigned int array_size,
 		//operations += 1;
 		unsigned int num = arr[i];
 
-		operations += 3;
-		for (size_t j = i - 1; j >= 0; j--)
-		{
-			operations += 3;
+		size_t j = i - 1;
+		operations += 4;
+		while (j >= 0 && arr[j] > num) {
 
-			operations += 3;
-			if (arr[i] < arr[j]) {
-				operations += 3;
-				arr[j + 1] = arr[j];
-			}
-			else
-			{
-				operations += 3;
-			 	arr[j+1] = num;
-				break;
-			}
+			operations += 4;
+			arr[j + 1] = arr[j];
+			operations += 2;
+			j--;
+
 		}
+		operations += 3;
+		arr[j + 1] = num;
+
 	}
+
 
 	copy_array(arr, array_size, result);
 }
@@ -282,61 +279,53 @@ void simpleInsertionsSort(unsigned int* arr, unsigned int array_size,
 void binaryInsertionsSort(unsigned int* arr, unsigned int array_size,
 	unsigned int* result, unsigned int&  operations) {
 	operations = 0;
-
+	int left, right, current;
+	int mid;
 	operations += 2;
 	for (size_t i = 1; i < array_size; i++)
 	{
 		operations += 3;//цикл
 
-		operations += 4;
-		unsigned int left = 0, right = i - 1, mid = i;
+		operations += 5;
+		left = 0;
+		right = i - 1;
+		current = arr[i];
 
 		operations += 1;
-		while (left != mid)
+		while (left <= right)
 		{
 			operations += 3;
 			mid = (right + left) / 2;
 
 			operations += 3;
-			if (arr[mid] > arr[i]) {
+			if (arr[mid] < current) {
 				operations += 2;
-				right = mid;
+				left = mid + 1;
 			}
 			else
 			{
-				operations += 1;
-				left = mid;
+				operations += 2;
+				right = mid - 1;
 			}
 
 		}
 
-		operations += 3;
-		if (arr[i] > arr[left]) {
-			operations += 3;
-			if (arr[i] > arr[right]) {
-				operations += 2;
-				left = right + 1;
-			}
-			else
-			{
-				operations += 1;
-				left = right;
-			}
-		}
+	
 
 		//сдвиг
-		operations += 2;
-		for (size_t k = i; k > left; k--)
+		operations += 3;
+		for (int k = i - 1; k >= left; k--)
 		{
 			operations += 3;//цикл
 
 			operations += 4;
-			arr[k] = arr[k - 1];
+			arr[k + 1] = arr[k];
 		}
 
 		operations += 3;
-		arr[left] = arr[i];
+		arr[left] = current;
 	}
+
 
 	copy_array(arr, array_size, result);
 }
@@ -432,7 +421,7 @@ void copy_array(number* arr, unsigned int array_size, number* result, unsigned i
 void countStableSortNumeric(number* arr, unsigned int array_size,
 	number* result, unsigned int& operations) {
 	
-	unsigned int K = 255;// max в массиве
+	unsigned char K = 255;// max в массиве
 	unsigned int* C = new unsigned int[K + 1];
 	//number* C = new number[K + 1];
 	//цикл по разрядам
@@ -471,7 +460,7 @@ void countStableSortNumeric(number* arr, unsigned int array_size,
 
 		//главный цикл
 		operations += 3;
-		for (size_t i = array_size - 1; i > 0 ; i--)
+		for (int i = array_size - 1; i >= 0 ; i--)
 		{
 			operations += 3;
 
