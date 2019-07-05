@@ -29,17 +29,39 @@ int main(){
 		simpleInsertionsSort, binaryInsertionsSort, countStableSort };
 	const string names[7]{"Простой пузырек", "Пузырек с условием Айверсона-1","Пузырек с условием Айверсона-1-2",
 		"Простые вставки","Бинарные вставки", "Подсчетом", "Цифровая"};
+	const string experiments[4]{ "0-9 random", "0-10000 random", "spoiled"," 10000->1" };
+	ofstream fout("Results.csv");
 	
 	unsigned int* elite_array1 = generator_module(8000, 10);
 	unsigned int* elite_array2 = generator_module(8000, 10000);
+	size_t s;
+	for (size_t i = 0; i < 8000; i++)
+	{
+		cout << elite_array1[i] << " ";
+	}
+	simpleInsertionsSort(elite_array1, 8000, elite_array2, s);
+	cout << s;
+	for (size_t i = 0; i < 8000; i++)
+	{
+		cout << elite_array2[i] << " ";
+	}
+
+	fout << "Длины:Сортировки;";
+	for (size_t i = 0; i < 7; i++)
+	{
+		fout << names[i] << ";";
+	}
+	fout << "\n";
 	for (size_t arrays = 0; arrays < 4; arrays++)
 	{
-
 		cout << "Experiment " <<arrays << "\n";
+		fout << experiments[arrays] << "\n";
 		unsigned int* elite_array_exp;
 		for (size_t len_array = 1000; len_array <= 8000; len_array += 1000)
 		{
 			cout << "Len = " << len_array<<"\n";
+
+			fout << len_array << ";";
 			elite_array_exp = new unsigned int[len_array];
 			if (arrays == 0){
 				copy_array(elite_array1, len_array, elite_array_exp);
@@ -58,30 +80,35 @@ int main(){
 					elite_array_exp[i] = len_array - i;
 				}
 			}
+		
+			
+	
 			unsigned int* curr_array = new unsigned int[len_array];
 			unsigned int* result_array = new unsigned int[len_array];
-			copy_array(elite_array_exp, len_array, curr_array);
-			
-
-
 			unsigned int count_operations;
 			for (size_t sort = 0; sort < sort_size; sort++)
 			{
 				count_operations = 0;
+				
+				copy_array(elite_array_exp, len_array, curr_array);
 				sortArray[sort](curr_array, len_array, result_array, count_operations);
 				cout << names[sort];
 				cout << count_operations << "\n";
+				fout << count_operations << ";";
+				//delete[] curr_array;
+			//	delete[] result_array;
 			}
-
-			delete[] curr_array;
-			delete[] result_array;
+			//delete[] curr_array;
+		//	delete[] result_array;
+			fout << "\n";
+		
 		}
 		delete[] elite_array_exp;
 	}
-		int nl;
-		cin >> nl;
 		delete[] elite_array1;
 		delete[] elite_array2;
+		fout.close();
+
 }
 //count элементов, по модулю module
 unsigned int* generator_module(unsigned int count, unsigned int module) {
@@ -142,6 +169,7 @@ void bubbleSortSimple(unsigned int* arr, unsigned int array_size,
 //сортировка пузырьком с первым условием Айверсона
 void bubbleSortIverson1(unsigned int* arr, unsigned int array_size,
 	unsigned int* result, unsigned int&  operations) {
+
 	operations = 0;
 	bool swapped;
 	operations += 3;//i=0 присвоение и i < array_size - 1 
@@ -272,7 +300,7 @@ void binaryInsertionsSort(unsigned int* arr, unsigned int array_size,
 			operations += 3;
 			if (arr[mid] > arr[i]) {
 				operations += 2;
-				right = mid - 1;
+				right = mid;
 			}
 			else
 			{
